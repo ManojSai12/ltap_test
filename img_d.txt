@@ -1,0 +1,102 @@
+import numpy as np
+from skimage import io
+import os
+import pandas as pd
+
+def calculate_pixel_difference(reference_image_path, target_directory):
+    try:
+        reference_image = np.array(io.imread(reference_image_path))
+    except FileNotFoundError:
+        print("Reference image not found. Check file path.")
+        return
+
+    # Create an empty DataFrame to store results
+    result_df = pd.DataFrame(columns=["Target Image", "Pixel Difference"])
+
+    # Loop through all files in the target directory
+    for target_filename in os.listdir(target_directory):
+        target_image_path = os.path.join(target_directory, target_filename)
+        try:
+            target_image = np.array(io.imread(target_image_path))
+        except FileNotFoundError:
+            print(f"Target image not found for {target_image_path}. Skipping...")
+            continue
+
+        # Ensure both images have the same dimensions
+        if reference_image.shape != target_image.shape:
+            print(f"Images have different dimensions for {target_image_path}. Skipping...")
+            continue
+
+        # Calculate pixel-wise absolute difference
+        pixel_difference = np.abs(reference_image - target_image)
+
+        # Calculate the sum of pixel differences
+        total_pixel_difference = np.sum(pixel_difference)
+
+        # Add the results to the DataFrame
+        result_df = result_df.append({"Target Image": target_filename, "Pixel Difference": total_pixel_difference}, ignore_index=True)
+
+    return result_df
+
+if __name__ == "__main__":
+    # Input the path to the reference binary map image and the directory containing target images
+    reference_image_path = input("Enter the path to the reference binary map image: ")
+    target_directory = input("Enter the path to the directory containing target images: ")
+
+    # Calculate pixel differences and get the result DataFrame
+    result_df = calculate_pixel_difference(reference_image_path, target_directory)
+
+    # Display the results in a table format
+    print(result_df)
+
+-----------------------------------------------------------------------------------------------------
+
+
+
+
+
+import numpy as np
+from skimage import io
+import os
+
+def calculate_pixel_difference(reference_image_path, target_directory, output_directory):
+    try:
+        reference_image = np.array(io.imread(reference_image_path))
+    except FileNotFoundError:
+        print("Reference image not found. Check file path.")
+        return
+
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_directory, exist_ok=True)
+
+    # Loop through all files in the target directory
+    for target_filename in os.listdir(target_directory):
+        target_image_path = os.path.join(target_directory, target_filename)
+        try:
+            target_image = np.array(io.imread(target_image_path))
+        except FileNotFoundError:
+            print(f"Target image not found for {target_image_path}. Skipping...")
+            continue
+
+        # Ensure both images have the same dimensions
+        if reference_image.shape != target_image.shape:
+            print(f"Images have different dimensions for {target_image_path}. Skipping...")
+            continue
+
+        # Calculate pixel-wise absolute difference
+        pixel_difference = np.abs(reference_image - target_image)
+
+        # Save the pixel difference image
+        output_path = os.path.join(output_directory, f"pixel_difference_{target_filename}")
+        io.imsave(output_path, pixel_difference)
+
+        print(f"Pixel difference image saved to {output_path} for {target_image_path}")
+
+if __name__ == "__main__":
+    # Input the path to the reference binary map image, target directory, and output directory
+    reference_image_path = input("Enter the path to the reference binary map image: ")
+    target_directory = input("Enter the path to the directory containing target images: ")
+    output_directory = input("Enter the path to the output directory: ")
+
+    calculate_pixel_difference(reference_image_path, target_directory, output_directory)
+

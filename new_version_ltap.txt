@@ -1,0 +1,50 @@
+import os
+import numpy as np
+from skimage import io
+
+# Specify the directory where your binary mask images are stored
+root_directory = "C:\\Users\\Manoj\\Desktop\\sat_imgs"
+months = ['aug']
+
+# Define the weights for each year (2000 to 2023) as 1 for all years
+weights = {year: 1 for year in range(2000, 2024)}
+
+# Initialize an empty array for the final weighted sum result
+weighted_sum = None
+
+for year in range(2000, 2024):
+    for month in months:
+        # Construct the filename for each month and year
+        filename = f"{month}{year}.TIFF"  # Adjust the file extension as needed
+        image_path = os.path.join(root_directory, filename)
+
+        # Try to load the mask image, and if it fails, continue to the next month
+        try:
+            mask = np.array(io.imread(image_path))
+        except FileNotFoundError:
+            print(f"Image not found for {filename}. Skipping...")
+            continue
+
+        # Check if the pixel value is zero
+        if np.any(mask):
+            # Initialize or update the weighted sum
+            if weighted_sum is None:
+                weighted_sum = mask * weights[year]
+            else:
+                weighted_sum += mask * weights[year]
+
+# Set the threshold value to 12
+threshold_value = 12
+
+# Create a boolean array where True represents a cloudy area and False represents a cloud-free area
+cloudy_area = weighted_sum >= threshold_value
+
+binary_map = np.zeros_like(weighted_sum)
+
+# Set the pixels classified as cloud-free to 0 (black) and cloudy area to 255 (white)
+binary_map[cloudy_area] = 255
+output_binary_map_path = "C:\\Users\\Manoj\\Desktop\\aug_c_binary_map.TIFF"
+io.imsave(output_binary_map_path, binary_map)
+
+# Print the binary map
+# print(binary_map)

@@ -1,0 +1,21 @@
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Historical data
+years = np.array([2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023])
+counts = np.array([90000, 92000, 88000, 85000, 91000, 88000, 85000, 90000, 88000, 91000, 90000, 85000, 90000, 88000, 92000, 85000, 90000, 88000, 85000, 90000, 88000, 92000, 90000, 88000])
+
+# Create a linear regression model
+model = LinearRegression()
+
+# Fit the model with historical data
+model.fit(years.reshape(-1, 1), counts)
+
+# Predict for upcoming years
+upcoming_years = np.array([2024, 2025, 2026, 2027, 2028])  # Replace with the years you want to predict
+predicted_counts = model.predict(upcoming_years.reshape(-1, 1))
+
+# Print the predictions
+for year, count in zip(upcoming_years, predicted_counts):
+    print(f"Year {year}: Predicted Count of Pixel Value 0 = {int(count)}")
+

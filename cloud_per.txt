@@ -1,0 +1,37 @@
+import os
+import numpy as np
+from skimage import io
+
+# Directory where your binary images are stored
+image_directory = "path/to/your/images"  # Update this path
+
+# Create a dictionary to store cloud cover predictions
+cloud_cover_predictions = {}
+
+# Loop through the months (assuming they are stored in subdirectories)
+for month in range(1, 13):  # Assuming subdirectories are named "1", "2", ..., "12"
+    month_directory = os.path.join(image_directory, str(month))
+
+    # Initialize a cloud cover count for each image
+    cloud_cover_count = 0
+
+    # Count the number of cloudy pixels in each image for the current month
+    for image_filename in os.listdir(month_directory):
+        if image_filename.endswith(".TIFF"):
+            image_path = os.path.join(month_directory, image_filename)
+            image = io.imread(image_path)
+
+            # Assuming 0 represents cloud and 255 represents clear sky
+            cloudy_pixels = np.count_nonzero(image == 0)
+            cloud_cover_count += cloudy_pixels
+
+    # Calculate the cloud cover percentage for the month
+    total_pixels = image.shape[0] * image.shape[1]  # Assuming all images have the same dimensions
+    cloud_cover_percentage = (cloud_cover_count / total_pixels) * 100
+
+    # Store the cloud cover prediction in the dictionary
+    cloud_cover_predictions[month] = cloud_cover_percentage
+
+# Display the cloud cover predictions
+for month, prediction in cloud_cover_predictions.items():
+    print(f"Month {month}: Predicted Cloud Cover (%) = {prediction:.2f}")

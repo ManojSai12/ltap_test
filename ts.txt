@@ -1,0 +1,49 @@
+import os
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+
+# Directory containing your time series images
+time_series_dir = "path/to/your/time/series/images"
+years = list(range(2000, 2024))  # 23 years
+
+# Create lists to store the time series data
+years_data = []
+values = []
+
+# Load and preprocess images, then extract values and assign years
+for year in years:
+    image_file = f"{year}_image.TIFF"  # Adjust the filename format as needed
+    image_path = os.path.join(time_series_dir, image_file)
+    image_data = io.imread(image_path)
+
+    # Process the image and extract relevant values
+    # For example, you might want to calculate the average pixel value
+    average_value = np.mean(image_data)
+
+    # Append the year and value to their respective lists
+    years_data.append(year)
+    values.append(average_value)
+
+# Convert the data to NumPy arrays for further analysis
+years_data = np.array(years_data).reshape(-1, 1)
+values = np.array(values)
+
+# Create a linear regression model
+model = LinearRegression()
+
+# Fit the model to the data
+model.fit(years_data, values)
+
+# Predict future values (years) using the model
+future_years = np.array(list(range(2024, 2030))).reshape(-1, 1)
+future_values = model.predict(future_years)
+
+# Plot the time series data and the predicted values
+plt.scatter(years_data, values, label='Actual Data')
+plt.plot(years_data, model.predict(years_data), color='red', label='Regression Line')
+plt.scatter(future_years, future_values, label='Predicted Values', color='green')
+plt.xlabel('Years')
+plt.ylabel('Average Value')
+plt.legend()
+plt.show()

@@ -1,0 +1,52 @@
+import os
+import numpy as np
+from skimage import io, feature
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Define a function to extract features from an image using scikit-image
+def extract_features(image_path):
+    image = io.imread(image_path)
+    # Preprocess the image (resize, normalize, etc.)
+    # Extract relevant features from the image using scikit-image functions
+    features = feature.hog(image, pixels_per_cell=(8, 8), cells_per_block=(2, 2), block_norm='L2-Hys')
+    return features
+
+# Define paths to your image datasets for different land cover classes
+land_cover_class1_dir = "path/to/land_cover_class1_images"
+land_cover_class2_dir = "path/to/land_cover_class2_images"
+# Add more directories for different classes if needed
+
+# Create lists to store features and corresponding labels
+X = []
+y = []
+
+# Load and preprocess images, then extract features and assign labels
+for image_file in os.listdir(land_cover_class1_dir):
+    image_path = os.path.join(land_cover_class1_dir, image_file)
+    features = extract_features(image_path)
+    X.append(features)
+    y.append(0)  # Assign label 0 for class 1
+
+for image_file in os.listdir(land_cover_class2_dir):
+    image_path = os.path.join(land_cover_class2_dir, image_file)
+    features = extract_features(image_path)
+    X.append(features)
+    y.append(1)  # Assign label 1 for class 2
+
+# Split your dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create an SVM classifier
+classifier = svm.SVC(kernel='linear')
+
+# Train the classifier on the training data
+classifier.fit(X_train, y_train)
+
+# Predict land cover classes for the test data
+y_pred = classifier.predict(X_test)
+
+# Evaluate the classifier's accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)

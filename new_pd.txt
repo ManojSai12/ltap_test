@@ -2,41 +2,43 @@ import os
 import numpy as np
 from skimage import io
 
-# Define the directories for composite and binary images
-composite_dir = "C:\\Users\\Manoj\\Desktop\\b"
-binary_dir = "C:\\Users\\Manoj\\Desktop\\bm_imgs"
+# Define the directories for the weighted images and month images
+weighted_images_dir = "C:\\Users\\Manoj\\Desktop\\weighted_images"
+months_dir = "C:\\Users\\Manoj\\Desktop\\month_images"
 
-# Initialize a dictionary to store the counts for each year
-yearly_0_counts = {}
+# Initialize dictionaries to store cloud-free pixel counts for each year
+cloud_free_counts = {year: 0 for year in range(2000, 2024)}
 
 # Loop through the years (2000 to 2023)
 for year in range(2000, 2024):
-    # Initialize the count for the current year to 0
-    yearly_0_count = 0
+    for month in range(1, 13):
+        # Construct the filenames for the weighted image and the month image
+        weighted_image_filename = f"{year}_month_{month}_weighted.TIFF"
+        month_image_filename = f"{year}_month_{month}.TIFF"
 
-    for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
-        # Skip specific months that you don't have images for
-        if year == 2000 and month == 'jan':
-            continue
-        if year == 2023 and month in ['sep', 'oct', 'nov', 'dec']:
-            continue
-
-        # Create file paths for the composite and binary images
-        composite_path = os.path.join(composite_dir, f"{month}{year}_composite_binary_map.TIFF")
+        # Create file paths for the weighted image and month image
+        weighted_image_path = os.path.join(weighted_images_dir, weighted_image_filename)
+        month_image_path = os.path.join(months_dir, month_image_filename)
 
         try:
-            # Load images using skimage
-            composite_image = io.imread(composite_path)
+            # Load the weighted image and the month image
+            weighted_image = io.imread(weighted_image_path)
+            month_image = io.imread(month_image_path)
 
-            # Count the number of pixel values equal to 0 in the composite image
-            yearly_0_count += np.sum(composite_image == 0)
+            # Check if image dimensions match
+            if weighted_image.shape != month_image.shape:
+                print(f"Image dimensions do not match for {year}-month-{month}, skipping...")
+                continue
 
+            # Count the number of cloud-free pixels (where both are 0)
+            cloud_free_pixels = np.logical_and(weighted_image == 0, month_image == 0)
+            cloud_free_count = np.sum(cloud_free_pixels)
+
+            # Update the count in the dictionary for the respective year
+            cloud_free_counts[year] += cloud_free_count
         except FileNotFoundError:
-            print(f"Composite image not found for {year}-{month}, skipping...")
+            print(f"Images not found for {year}-month-{month}, skipping...")
 
-    # Store the yearly count in the dictionary
-    yearly_0_counts[year] = yearly_0_count
-
-# Display the occurrences of pixel value 0 for each year
-for year, count in yearly_0_counts.items():
-    print(f"Year {year}: {count} occurrences of pixel value 0")
+# Display the cloud-free pixel counts for each year
+for year, count in cloud_free_counts.items():
+    print(f"Year {year}: {count} cloud-free pixels")

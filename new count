@@ -1,0 +1,42 @@
+import os
+import numpy as np
+from skimage import io
+
+# Define the directories for composite and binary images
+composite_dir = "C:\\Users\\Manoj\\Desktop\\b"
+binary_dir = "C:\\Users\\Manoj\\Desktop\\bm_imgs"
+
+# Initialize a dictionary to store the counts for each year
+yearly_0_counts = {}
+
+# Loop through the years (2000 to 2023)
+for year in range(2000, 2024):
+    # Initialize the count for the current year to 0
+    yearly_0_count = 0
+
+    for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
+        # Skip specific months that you don't have images for
+        if year == 2000 and month == 'jan':
+            continue
+        if year == 2023 and month in ['sep', 'oct', 'nov', 'dec']:
+            continue
+
+        # Create file paths for the composite and binary images
+        composite_path = os.path.join(composite_dir, f"{month}{year}_composite_binary_map.TIFF")
+
+        try:
+            # Load images using skimage
+            composite_image = io.imread(composite_path)
+
+            # Count the number of pixel values equal to 0 in the composite image
+            yearly_0_count += np.sum(composite_image == 0)
+
+        except FileNotFoundError:
+            print(f"Composite image not found for {year}-{month}, skipping...")
+
+    # Store the yearly count in the dictionary
+    yearly_0_counts[year] = yearly_0_count
+
+# Display the occurrences of pixel value 0 for each year
+for year, count in yearly_0_counts.items():
+    print(f"Year {year}: {count} occurrences of pixel value 0")

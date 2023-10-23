@@ -1,0 +1,72 @@
+import os
+from skimage import io
+
+# Define the directory where your binary mask images are stored
+binary_mask_directory = "C:\\Users\\Manoj\\Desktop\\bm_imgs"
+
+# Create a region mask for Antarctica (assume Antarctica starts at row 300)
+antartica_start_row = 300
+antartica_end_row = 360
+
+# Define a pixel value for transparency (e.g., 0 for full transparency)
+transparent_pixel_value = 0
+
+# Iterate through the binary mask images
+for year in range(2000, 2024):
+    for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
+        # Construct the filename for the binary mask image
+        binary_mask_filename = f"{month}{year}_mask.TIFF"
+        binary_mask_path = os.path.join(binary_mask_directory, binary_mask_filename)
+
+        try:
+            # Load the binary mask image using skimage
+            binary_mask_image = io.imread(binary_mask_path)
+
+            # Set the region corresponding to Antarctica to transparent
+            binary_mask_image[antartica_start_row:antartica_end_row, :] = transparent_pixel_value
+
+            # Save the modified binary mask image
+            modified_binary_mask_path = os.path.join(binary_mask_directory, f"modified_{month}{year}_mask.TIFF")
+            io.imsave(modified_binary_mask_path, binary_mask_image)
+
+        except FileNotFoundError:
+            print(f"Image not found for {year}-{month}. Skipping...")
+
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
+
+import os
+from skimage import io
+
+# Define the directory where your weighted images are stored
+weighted_images_directory = "C:\\Users\\Manoj\\Desktop\\weighted_bm_imgs"
+
+# Create a region mask for Antarctica (assume Antarctica starts at row 300)
+antartica_start_row = 300
+antartica_end_row = 360
+
+# Define a pixel value for transparency (e.g., 0 for full transparency)
+transparent_pixel_value = 0
+
+# Iterate through the weighted images
+for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
+    # Construct the filename for the weighted image
+    weighted_image_filename = f"{month}_weighted_image.TIFF"
+    weighted_image_path = os.path.join(weighted_images_directory, weighted_image_filename)
+
+    try:
+        # Load the weighted image using skimage
+        weighted_image = io.imread(weighted_image_path)
+
+        # Set the region corresponding to Antarctica to transparent
+        weighted_image[antartica_start_row:antartica_end_row, :] = transparent_pixel_value
+
+        # Save the modified weighted image
+        modified_weighted_image_path = os.path.join(weighted_images_directory, f"modified_{month}_weighted_image.TIFF")
+        io.imsave(modified_weighted_image_path, weighted_image)
+
+    except FileNotFoundError:
+        print(f"Image not found for {month}. Skipping...")

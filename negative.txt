@@ -1,0 +1,71 @@
+import os
+import numpy as np
+from skimage import io
+
+# Specify the directory where your binary mask images are stored
+root_directory = "C:\\Users\\Manoj\\Desktop\\b"
+months = ['dec']
+
+# Initialize weights dictionary
+weights = {}
+
+for year in range(2000, 2024):
+    if year < 2011:
+        # Assign negative weights to years less than 2011
+        weights[year] = -10 + (2011 - year)
+    elif year == 2011:
+        # Assign a weight of 0 to the year 2011
+        weights[year] = 0
+    else:
+        # Assign positive weights to years greater than 2011
+        weights[year] = year - 2011
+
+# Initialize an empty array for the final weighted sum result
+weighted_sum = None
+
+# Number of years to consider for the threshold
+years_to_consider = 10
+
+for year in range(2000, 2024):
+    for month in months:
+        # Construct the filename for each month and year
+        filename = f"modified_{month}{year}_mask.TIFF"  # Adjust the file extension as needed
+        image_path = os.path.join(root_directory, filename)
+
+        # Try to load the mask image, and if it fails, continue to the next month
+        try:
+            mask = np.array(io.imread(image_path))
+        except FileNotFoundError:
+            print(f"Image not found for {filename}. Skipping...")
+            continue
+
+        # Check if the pixel value is zero
+        if np.any(mask):
+            # Initialize or update the weighted sum
+            if weighted_sum is None:
+                weighted_sum = mask * weights[year]
+            else:
+                weighted_sum += mask * weights[year]
+
+    # Calculate the threshold value as the sum of weighted values of the last 10 years
+    if year >= 2014:  # Considering the period from 2014 to 2023 (10 years)
+        threshold_value = sum([weights[y] for y in range(year - years_to_consider + 1, year + 1)])
+
+# Create a boolean array where True represents a cloudy area and False represents a cloud-free area
+cloudy_area = weighted_sum > threshold_value
+
+# Create a binary map where cloud-free pixels are 0
+binary_map = np.zeros_like(weighted_sum)
+
+# Set the pixels classified as cloud-free to 255
+binary_map[cloudy_area] = 255
+
+# Set ocean pixels to 128
+
+# Define the path to save the binary map
+binary_map_path = "C:\\Users\\Manoj\\Desktop\\binary_dec.TIFF"
+
+# Save the binary map as a TIFF image
+io.imsave(binary_map_path, binary_map)
+
+print(f"Binary map saved to {binary_map_path}")
